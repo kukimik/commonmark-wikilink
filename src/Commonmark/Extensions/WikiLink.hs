@@ -29,6 +29,7 @@ module Commonmark.Extensions.WikiLink (
 ) where
 
 import Commonmark qualified as CM
+import Commonmark.Entity qualified as CE
 import Commonmark.Pandoc qualified as CP
 import Commonmark.TokParsers qualified as CT
 import Control.Monad (liftM2)
@@ -229,19 +230,19 @@ wikilinkSpec =
       replicateM_ 2 $ CT.symbol '['
       P.notFollowedBy (CT.symbol '[')
       url <-
-        CM.untokenize <$> many (satisfyNoneOf [isPipe, isAnchor, isClose])
+        CE.unEntity <$> many (satisfyNoneOf [isPipe, isAnchor, isClose])
       wl <- mkWikiLinkFromUrl url
       -- We ignore the anchor until https://github.com/srid/emanote/discussions/105
       _anchor <-
         M.optional $
-          CM.untokenize
+          CE.unEntity
             <$> ( CT.symbol '#'
                     *> many (satisfyNoneOf [isPipe, isClose])
                 )
       title <-
         M.optional $
           -- TODO: Should parse as inline so link text can be formatted?
-          CM.untokenize
+          CE.unEntity
             <$> ( CT.symbol '|'
                     *> many (satisfyNoneOf [isClose])
                 )
